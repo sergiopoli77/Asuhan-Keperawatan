@@ -138,7 +138,7 @@ const Login = ({ onLogin }) => {
         </form>
 
         <div className="login-footer">
-          <p>© 2025 Sistem Askep Digital</p>
+          <p>© 2025 Sistem Asuhan Keperawatan</p>
         </div>
       </div>
     </div>
