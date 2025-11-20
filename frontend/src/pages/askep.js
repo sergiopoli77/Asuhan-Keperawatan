@@ -154,8 +154,8 @@ const Askep = () => {
     <div className="dashboard-content">
       <div className="page-header">
         <div className="header-content">
-          <h1>Askep AI Plan</h1>
-          <p className="header-subtitle">Buat rencana asuhan keperawatan dengan bantuan Artificial Intelligence</p>
+          <h1>Asuhan Keperawatan</h1>
+          <p className="header-subtitle">Buat rencana asuhan keperawatan</p>
         </div>
         <div className="header-actions">
           <button className="btn-secondary" onClick={handleNewAssessment}>
@@ -175,25 +175,6 @@ const Askep = () => {
         </div>
       </div>
 
-      {/* AI Status Banner */}
-      <div className="ai-status-banner">
-        <div className="ai-status-content">
-          <div className="ai-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-          </div>
-          <div className="ai-status-text">
-            <h3>AI Assistant Ready</h3>
-            <p>Sistem AI siap membantu Anda membuat rencana asuhan keperawatan yang komprehensif dan evidence-based</p>
-          </div>
-          <div className="ai-capabilities">
-            <span className="capability-tag">Diagnosis Keperawatan</span>
-            <span className="capability-tag">Intervensi</span>
-            <span className="capability-tag">Outcome</span>
-          </div>
-        </div>
-      </div>
 
       {/* Navigation Tabs */}
       <div className="tab-navigation">
@@ -205,16 +186,6 @@ const Askep = () => {
             <path d="M19 3H5c-1.1 0-1.99.9-1.99 2L4 19c0 1.1.89 2 2 2h10c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V7h10v2z"/>
           </svg>
           Assessment
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'plan' ? 'active' : ''}`}
-          onClick={() => setActiveTab('plan')}
-          disabled={!generatedPlan}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-          Rencana AI
         </button>
       </div>
 
