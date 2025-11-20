@@ -10,56 +10,7 @@ const Pasien = () => {
 
   // Data contoh pasien (fallback)
   const [patients, setPatients] = useState([
-    {
-      id: 'P001',
-      rm: 'RM001',
-      name: 'Ahmad Wijaya',
-      age: 45,
-      gender: 'Laki-laki',
-      diagnosis: 'Diabetes Mellitus',
-      status: 'Rawat Inap',
-      avatar: 'A'
-    },
-    {
-      id: 'P002',
-      rm: 'RM002',
-      name: 'Siti Aminah',
-      age: 32,
-      gender: 'Perempuan',
-      diagnosis: 'Hipertensi',
-      status: 'Rawat Jalan',
-      avatar: 'S'
-    },
-    {
-      id: 'P003',
-      rm: 'RM003',
-      name: 'Budi Santoso',
-      age: 58,
-      gender: 'Laki-laki',
-      diagnosis: 'Stroke',
-      status: 'Pulang',
-      avatar: 'B'
-    },
-    {
-      id: 'P004',
-      rm: 'RM004',
-      name: 'Dewi Lestari',
-      age: 28,
-      gender: 'Perempuan',
-      diagnosis: 'Pneumonia',
-      status: 'Rawat Inap',
-      avatar: 'D'
-    },
-    {
-      id: 'P005',
-      rm: 'RM005',
-      name: 'Joko Susilo',
-      age: 41,
-      gender: 'Laki-laki',
-      diagnosis: 'Gastritis',
-      status: 'Rawat Jalan',
-      avatar: 'J'
-    }
+    
   ]);
 
   const [showAddModal, setShowAddModal] = useState(false);

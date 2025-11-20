@@ -55,7 +55,7 @@ const Dashboard = ({ user, onLogout }) => {
                 <div className="welcome-text">
                   <h2>Selamat datang kembali, {user.username}!</h2>
                   <p>Anda login sebagai <span className="role-badge">{user.role}</span></p>
-                  <p className="welcome-desc">Kelola asuhan keperawatan dengan mudah dan efisien menggunakan teknologi AI terdepan.</p>
+                  <p className="welcome-desc">Kelola asuhan keperawatan dengan mudah dan efisien.</p>
                 </div>
                 <div className="welcome-illustration">
                   <svg width="120" height="120" viewBox="0 0 24 24" fill="none">
