@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import '../assets/Dashboard.css';
 import '../assets/Patients.css';
 import Pasien from './pasien';
-import AskepAiPlan from './askepaiplan';
-import Implementasi from './implementasi';
+import Askep from './askep';
 
 const Dashboard = ({ user, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -29,37 +28,10 @@ const Dashboard = ({ user, onLogout }) => {
     },
     { 
       id: 'askep', 
-      label: 'Askep AI Plan', 
+      label: 'Asuhan Keperawatan', 
       icon: (
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>
-      )
-    },
-    { 
-      id: 'implementasi', 
-      label: 'Implementasi', 
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-        </svg>
-      )
-    },
-    { 
-      id: 'evaluasi', 
-      label: 'Evaluasi', 
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-        </svg>
-      )
-    },
-    { 
-      id: 'laporan', 
-      label: 'Laporan', 
-      icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
         </svg>
       )
     },
@@ -139,48 +111,6 @@ const Dashboard = ({ user, onLogout }) => {
                     <p className="stat-description">Rencana yang sedang berjalan</p>
                   </div>
                 </div>
-                
-                <div className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-icon implementation">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                      </svg>
-                    </div>
-                    <div className="stat-trend positive">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M7 14l5-5 5 5z"/>
-                      </svg>
-                      +15%
-                    </div>
-                  </div>
-                  <div className="stat-content">
-                    <h3>Implementasi</h3>
-                    <p className="stat-number">156</p>
-                    <p className="stat-description">Tindakan selesai hari ini</p>
-                  </div>
-                </div>
-                
-                <div className="stat-card">
-                  <div className="stat-header">
-                    <div className="stat-icon reports">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
-                      </svg>
-                    </div>
-                    <div className="stat-trend neutral">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 12l4-4 4 4z"/>
-                      </svg>
-                      0%
-                    </div>
-                  </div>
-                  <div className="stat-content">
-                    <h3>Laporan</h3>
-                    <p className="stat-number">42</p>
-                    <p className="stat-description">Laporan dibuat minggu ini</p>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -210,24 +140,12 @@ const Dashboard = ({ user, onLogout }) => {
                     </svg>
                   </div>
                   <div className="activity-content">
-                    <h4>Askep AI Plan Dibuat</h4>
-                    <p>Rencana asuhan untuk Siti Aminah selesai dianalisis AI</p>
+                    <h4>Asuahan Keperawatan Dibuat</h4>
+                    <p>Rencana asuhan untuk Siti Aminah selesai</p>
                     <span className="activity-time">15 menit yang lalu</span>
                   </div>
                 </div>
                 
-                <div className="activity-card">
-                  <div className="activity-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                    </svg>
-                  </div>
-                  <div className="activity-content">
-                    <h4>Implementasi Selesai</h4>
-                    <p>Tindakan keperawatan Budi Santoso telah diselesaikan</p>
-                    <span className="activity-time">1 jam yang lalu</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -235,9 +153,7 @@ const Dashboard = ({ user, onLogout }) => {
       case 'pasien':
         return <Pasien />;
       case 'askep':
-        return <AskepAiPlan />;
-      case 'implementasi':
-        return <Implementasi />;
+        return <Askep/>;
       case 'evaluasi':
         return (
           <div className="dashboard-content">
