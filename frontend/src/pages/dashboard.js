@@ -1,11 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../assets/Dashboard.css';
 import '../assets/Patients.css';
 import Pasien from './pasien';
 import Askep from './askep';
+import { db } from '../config/firebase';
+import { ref, get } from 'firebase/database';
 
 const Dashboard = ({ user, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [totalPatients, setTotalPatients] = useState(0);
+
+  useEffect(() => {
+    const loadTotal = async () => {
+      try {
+        const pasienRef = ref(db, 'pasien');
+        const snap = await get(pasienRef);
+        if (!snap.exists()) {
+          setTotalPatients(0);
+          return;
+        }
+        const val = snap.val();
+        setTotalPatients(Object.keys(val).length);
+      } catch (err) {
+        console.error('Gagal memuat total pasien', err);
+        setTotalPatients(0);
+      }
+    };
+    loadTotal();
+  }, []);
 
   const menuItems = [
     { 
@@ -86,7 +108,7 @@ const Dashboard = ({ user, onLogout }) => {
                   </div>
                   <div className="stat-content">
                     <h3>Total Pasien</h3>
-                    <p className="stat-number">246</p>
+                    <p className="stat-number">{totalPatients}</p>
                     <p className="stat-description">Pasien terdaftar bulan ini</p>
                   </div>
                 </div>
@@ -99,7 +121,7 @@ const Dashboard = ({ user, onLogout }) => {
                       </svg>
                     </div>
                     <div className="stat-trend positive">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="clearcurrentColor">
                         <path d="M7 14l5-5 5 5z"/>
                       </svg>
                       +8%
@@ -107,7 +129,7 @@ const Dashboard = ({ user, onLogout }) => {
                   </div>
                   <div className="stat-content">
                     <h3>Askep Aktif</h3>
-                    <p className="stat-number">89</p>
+                    <p className="stat-number">0</p>
                     <p className="stat-description">Rencana yang sedang berjalan</p>
                   </div>
                 </div>
@@ -128,7 +150,7 @@ const Dashboard = ({ user, onLogout }) => {
                   </div>
                   <div className="activity-content">
                     <h4>Pasien Baru Ditambahkan</h4>
-                    <p>Ahmad Wijaya telah didaftarkan ke sistem</p>
+                    <p>moty telah didaftarkan ke sistem</p>
                     <span className="activity-time">2 menit yang lalu</span>
                   </div>
                 </div>
@@ -140,8 +162,8 @@ const Dashboard = ({ user, onLogout }) => {
                     </svg>
                   </div>
                   <div className="activity-content">
-                    <h4>Asuahan Keperawatan Dibuat</h4>
-                    <p>Rencana asuhan untuk Siti Aminah selesai</p>
+                    <h4>Asuhan Keperawatan Dibuat</h4>
+                    <p>Rencana asuhan untuk moty selesai</p>
                     <span className="activity-time">15 menit yang lalu</span>
                   </div>
                 </div>

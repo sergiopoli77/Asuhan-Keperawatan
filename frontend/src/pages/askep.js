@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../assets/Dashboard.css';
 import '../assets/Askep.css';
+import { db } from '../config/firebase';
+import { ref, get } from 'firebase/database';
 
 const Askep = () => {
   const [selectedPatient, setSelectedPatient] = useState('');
@@ -21,13 +23,33 @@ const Askep = () => {
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeTab, setActiveTab] = useState('assessment');
 
-  // Data contoh pasien
-  const patients = [
-    { id: 'P001', name: 'Ahmad Wijaya', rm: 'RM001', diagnosis: 'Diabetes Mellitus' },
-    { id: 'P002', name: 'Siti Aminah', rm: 'RM002', diagnosis: 'Hipertensi' },
-    { id: 'P003', name: 'Budi Santoso', rm: 'RM003', diagnosis: 'Stroke' },
-    { id: 'P004', name: 'Dewi Lestari', rm: 'RM004', diagnosis: 'Pneumonia' },
-  ];
+  // patients loaded from RTDB `pasien` node
+  const [patients, setPatients] = useState([]);
+
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const pasienRef = ref(db, 'pasien');
+        const snap = await get(pasienRef);
+        if (!snap.exists()) {
+          setPatients([]);
+          return;
+        }
+        const val = snap.val();
+        const list = Object.keys(val).map(key => ({
+          id: key,
+          rm: val[key].rm || '',
+          name: val[key].name || val[key].nama || '',
+          diagnosis: val[key].diagnosis || ''
+        }));
+        setPatients(list);
+      } catch (err) {
+        console.error('Gagal memuat pasien dari RTDB', err);
+        setPatients([]);
+      }
+    };
+    loadPatients();
+  }, []);
 
   // Contoh rencana yang dihasilkan AI
   const samplePlan = {

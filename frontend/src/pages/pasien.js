@@ -3,6 +3,7 @@ import '../assets/Patients.css';
 import { db } from '../config/firebase';
 import { ref, push, set, get } from 'firebase/database';
 import AddPatients from '../components/addpatients';
+import ViewPatient from '../components/viewpatient';
 
 const Pasien = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,14 +101,30 @@ const Pasien = () => {
     }
   };
 
+  const [viewPatient, setViewPatient] = useState(null);
+  const [editPatient, setEditPatient] = useState(null);
+
   const handleViewPatient = (patient) => {
-    // Logic untuk melihat detail pasien
-    console.log('Melihat detail pasien:', patient);
+    setViewPatient(patient);
   };
 
   const handleEditPatient = (patient) => {
-    // Logic untuk mengedit pasien
-    console.log('Mengedit pasien:', patient);
+    setEditPatient(patient);
+    setShowAddModal(true);
+  };
+
+  const handleDeletePatient = async (patient) => {
+    if (!patient || !patient.id) return;
+    if (!window.confirm(`Hapus pasien ${patient.name || patient.nama}?`)) return;
+    try {
+      const { remove } = await import('firebase/database');
+      const pasienRef = ref(db, `pasien/${patient.id}`);
+      await remove(pasienRef);
+      setPatients(prev => prev.filter(p => p.id !== patient.id));
+    } catch (err) {
+      console.error('Gagal menghapus pasien', err);
+      alert('Gagal menghapus pasien. Cek koneksi.');
+    }
   };
 
   const handleCreateAskep = (patient) => {
@@ -136,7 +153,27 @@ const Pasien = () => {
           </button>
         </div>
       </div>
-      <AddPatients show={showAddModal} onClose={() => setShowAddModal(false)} onSave={handleSaveFromModal} saving={loadingAdd} />
+      <AddPatients show={showAddModal} onClose={() => { setShowAddModal(false); setEditPatient(null); }} onSave={(payload, id) => {
+        if (id) {
+          // edit flow: update existing
+          (async () => {
+            setLoadingAdd(true);
+            try {
+              const pasienRef = ref(db, `pasien/${id}`);
+              await set(pasienRef, { ...payload, createdAt: Date.now() });
+              setPatients(prev => prev.map(p => p.id === id ? ({ id, ...payload, avatar: (payload.name||'P').charAt(0).toUpperCase() }) : p));
+              setShowAddModal(false);
+              setEditPatient(null);
+            } catch (err) {
+              console.error('Gagal memperbarui pasien', err);
+              alert('Gagal memperbarui pasien. Cek koneksi.');
+            } finally { setLoadingAdd(false); }
+          })();
+        } else {
+          handleSaveFromModal(payload);
+        }
+      }} saving={loadingAdd} initialData={editPatient} />
+      <ViewPatient show={!!viewPatient} onClose={() => setViewPatient(null)} data={viewPatient} />
 
       <div className="patients-stats">
         <div className="stat-card-small">
@@ -266,6 +303,15 @@ const Pasien = () => {
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                        </svg>
+                      </button>
+                      <button
+                        className="btn-action delete"
+                        title="Hapus"
+                        onClick={() => handleDeletePatient(patient)}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
                         </svg>
                       </button>
                       {patient.status === 'Pulang' ? (

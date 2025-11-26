@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './addpatients.css';
 
-const AddPatients = ({ show, onClose, onSave, saving }) => {
+const AddPatients = ({ show, onClose, onSave, saving, initialData }) => {
   const [rm, setRm] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
@@ -10,11 +10,18 @@ const AddPatients = ({ show, onClose, onSave, saving }) => {
   const [status, setStatus] = useState('Rawat Jalan');
 
   useEffect(() => {
-    if (!show) {
-      // reset form when modal closed
+    if (initialData) {
+      setRm(initialData.rm || '');
+      setName(initialData.name || initialData.nama || '');
+      setAge(initialData.age || initialData.usia || '');
+      setGender(initialData.gender || initialData.jenisKelamin || 'Laki-laki');
+      setDiagnosis(initialData.diagnosis || '');
+      setStatus(initialData.status || 'Rawat Jalan');
+    } else if (!show) {
+      // reset form when modal closed and no initialData
       setRm(''); setName(''); setAge(''); setGender('Laki-laki'); setDiagnosis(''); setStatus('Rawat Jalan');
     }
-  }, [show]);
+  }, [show, initialData]);
 
   if (!show) return null;
 
@@ -29,7 +36,8 @@ const AddPatients = ({ show, onClose, onSave, saving }) => {
       diagnosis,
       status
     };
-    onSave && onSave(payload);
+    // if editing, pass id as second arg
+    onSave && onSave(payload, initialData && initialData.id);
   };
 
   return (
@@ -72,7 +80,7 @@ const AddPatients = ({ show, onClose, onSave, saving }) => {
           </div>
           <div className="addpatients-actions">
             <button type="button" className="addpatients-button cancel" onClick={onClose}>Batal</button>
-            <button type="submit" className="addpatients-button save" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Pasien'}</button>
+            <button type="submit" className="addpatients-button save" disabled={saving}>{saving ? 'Menyimpan...' : (initialData ? 'Perbarui Pasien' : 'Simpan Pasien')}</button>
           </div>
         </form>
       </div>
