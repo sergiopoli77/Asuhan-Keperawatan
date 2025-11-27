@@ -209,7 +209,7 @@ const Askep = () => {
     <div className="dashboard-content">
       <div className="page-header">
         <div className="header-content">
-          <h1>Rivero Tulenan</h1>
+          <h1>Rivero Nicky Tulenan</h1>
           <p className="header-subtitle">Buat rencana asuhan keperawatan</p>
         </div>
         <div className="header-actions">
