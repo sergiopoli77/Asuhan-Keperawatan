@@ -1,0 +1,31 @@
+/* Styles for Assessment modal component */
+.assessment-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.assessment-card {
+  width: 640px;
+  max-width: calc(100% - 40px);
+  background: #fff;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.assessment-card h3 { margin: 0 0 10px 0; }
+.assessment-row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.assessment-row .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.assessment-row label { display:block; font-size:13px; margin-bottom:6px; color:#333; }
+.assessment-row input, .assessment-row select, .assessment-row textarea { width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:6px; }
+.assessment-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+.assessment-button { padding:8px 12px; border-radius:6px; border:0; cursor:pointer; }
+.assessment-button.cancel { background:#f5f5f5; }
+.assessment-button.save { background:#0d6efd; color:#fff; }
+
+.patient-info-mini { margin-top:8px; padding:8px; background:#fafafa; border-radius:6px; border:1px solid #eee; }

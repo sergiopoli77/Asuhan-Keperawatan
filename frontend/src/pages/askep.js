@@ -3,6 +3,7 @@ import '../assets/Dashboard.css';
 import '../assets/Askep.css';
 import { db } from '../config/firebase';
 import { ref, get } from 'firebase/database';
+import Assessment from '../components/assessment';
 
 const Askep = () => {
   const [selectedPatient, setSelectedPatient] = useState('');
@@ -22,6 +23,7 @@ const Askep = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [activeTab, setActiveTab] = useState('assessment');
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
 
   // patients loaded from RTDB `pasien` node
   const [patients, setPatients] = useState([]);
@@ -172,6 +174,37 @@ const Askep = () => {
 
   const selectedPatientData = patients.find(p => p.id === selectedPatient);
 
+  // When a patient is selected, try to load full patient details and prefill assessment
+  useEffect(() => {
+    const loadPatientDetails = async () => {
+      if (!selectedPatient) {
+        setAssessmentData(prev => ({
+          ...prev,
+          subjective: '',
+          objective: ''
+        }));
+        return;
+      }
+      try {
+        const snap = await get(ref(db, `pasien/${selectedPatient}`));
+        if (snap.exists()) {
+          const p = snap.val();
+          // Prefill subjective with diagnosis/notes if available
+          const preSubjective = p.keluhan || p.subjective || (p.diagnosis ? `Diagnosis medis: ${p.diagnosis}\nRiwayat penyakit: ` : '');
+          const preObjective = p.objective || '';
+          setAssessmentData(prev => ({
+            ...prev,
+            subjective: preSubjective,
+            objective: preObjective
+          }));
+        }
+      } catch (err) {
+        console.error('Gagal memuat detail pasien', err);
+      }
+    };
+    loadPatientDetails();
+  }, [selectedPatient]);
+
   return (
     <div className="dashboard-content">
       <div className="page-header">
@@ -180,7 +213,7 @@ const Askep = () => {
           <p className="header-subtitle">Buat rencana asuhan keperawatan</p>
         </div>
         <div className="header-actions">
-          <button className="btn-secondary" onClick={handleNewAssessment}>
+          <button className="btn-secondary" onClick={() => setShowAssessmentModal(true)}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>
@@ -196,7 +229,7 @@ const Askep = () => {
           )}
         </div>
       </div>
-
+ 
 
       {/* Navigation Tabs */}
       <div className="tab-navigation">
@@ -247,124 +280,144 @@ const Askep = () => {
             </div>
           </div>
 
-          {/* Subjective Data */}
-          <div className="form-section">
-            <h3 className="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9H7v-2h6v2zm4-4H7V5h10v2z"/>
-              </svg>
-              Data Subjektif
-            </h3>
-            <div className="form-group">
-              <label>Keluhan Utama & Riwayat Penyakit</label>
-              <textarea
-                className="form-textarea"
-                rows="4"
-                placeholder="Masukkan keluhan pasien, riwayat penyakit, dan informasi subjektif lainnya..."
-                value={assessmentData.subjective}
-                onChange={(e) => handleInputChange('subjective', e.target.value)}
-              />
-            </div>
-          </div>
+          {/* Subjective & Objective only show after a patient is selected */}
+          {selectedPatient ? (
+            <>
+              {/* Subjective Data */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9H7v-2h6v2zm4-4H7V5h10v2z"/>
+                  </svg>
+                  Data Subjektif
+                </h3>
+                <div className="form-group">
+                  <label>Keluhan Utama & Riwayat Penyakit</label>
+                  <textarea
+                    className="form-textarea"
+                    rows="4"
+                    placeholder="Masukkan keluhan pasien, riwayat penyakit, dan informasi subjektif lainnya..."
+                    value={assessmentData.subjective}
+                    onChange={(e) => handleInputChange('subjective', e.target.value)}
+                  />
+                </div>
+              </div>
 
-          {/* Objective Data */}
-          <div className="form-section">
-            <h3 className="section-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-              </svg>
-              Data Objektif
-            </h3>
-            
-            {/* Vital Signs */}
-            <div className="vital-signs-grid">
-              <div className="form-group">
-                <label>Tekanan Darah</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="120/80 mmHg"
-                  value={assessmentData.vital_signs.blood_pressure}
-                  onChange={(e) => handleInputChange('vital_signs.blood_pressure', e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Nadi</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="80 x/menit"
-                  value={assessmentData.vital_signs.pulse}
-                  onChange={(e) => handleInputChange('vital_signs.pulse', e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Suhu</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="36.5°C"
-                  value={assessmentData.vital_signs.temperature}
-                  onChange={(e) => handleInputChange('vital_signs.temperature', e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Pernapasan</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="20 x/menit"
-                  value={assessmentData.vital_signs.respiration}
-                  onChange={(e) => handleInputChange('vital_signs.respiration', e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label>Saturasi O2</label>
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="98%"
-                  value={assessmentData.vital_signs.oxygen_saturation}
-                  onChange={(e) => handleInputChange('vital_signs.oxygen_saturation', e.target.value)}
-                />
-              </div>
-            </div>
+              {/* Objective Data */}
+              <div className="form-section">
+                <h3 className="section-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                  </svg>
+                  Data Objektif
+                </h3>
+                
+                {/* Vital Signs */}
+                <div className="vital-signs-grid">
+                  <div className="form-group">
+                    <label>Tekanan Darah</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="120/80 mmHg"
+                      value={assessmentData.vital_signs.blood_pressure}
+                      onChange={(e) => handleInputChange('vital_signs.blood_pressure', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Nadi</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="80 x/menit"
+                      value={assessmentData.vital_signs.pulse}
+                      onChange={(e) => handleInputChange('vital_signs.pulse', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Suhu</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="36.5°C"
+                      value={assessmentData.vital_signs.temperature}
+                      onChange={(e) => handleInputChange('vital_signs.temperature', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Pernapasan</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="20 x/menit"
+                      value={assessmentData.vital_signs.respiration}
+                      onChange={(e) => handleInputChange('vital_signs.respiration', e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Saturasi O2</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="98%"
+                      value={assessmentData.vital_signs.oxygen_saturation}
+                      onChange={(e) => handleInputChange('vital_signs.oxygen_saturation', e.target.value)}
+                    />
+                  </div>
+                </div>
 
-            <div className="form-group">
-              <label>Pemeriksaan Fisik</label>
-              <textarea
-                className="form-textarea"
-                rows="4"
-                placeholder="Hasil pemeriksaan fisik, inspeksi, palpasi, perkusi, auskultasi..."
-                value={assessmentData.objective}
-                onChange={(e) => handleInputChange('objective', e.target.value)}
-              />
-            </div>
+                <div className="form-group">
+                  <label>Pemeriksaan Fisik</label>
+                  <textarea
+                    className="form-textarea"
+                    rows="4"
+                    placeholder="Hasil pemeriksaan fisik, inspeksi, palpasi, perkusi, auskultasi..."
+                    value={assessmentData.objective}
+                    onChange={(e) => handleInputChange('objective', e.target.value)}
+                  />
+                </div>
 
-            <div className="form-group">
-              <label>Hasil Laboratorium</label>
-              <textarea
-                className="form-textarea"
-                rows="3"
-                placeholder="Hasil lab, rontgen, dan pemeriksaan penunjang lainnya..."
-                value={assessmentData.lab_results}
-                onChange={(e) => handleInputChange('lab_results', e.target.value)}
-              />
-            </div>
+                <div className="form-group">
+                  <label>Hasil Laboratorium</label>
+                  <textarea
+                    className="form-textarea"
+                    rows="3"
+                    placeholder="Hasil lab, rontgen, dan pemeriksaan penunjang lainnya..."
+                    value={assessmentData.lab_results}
+                    onChange={(e) => handleInputChange('lab_results', e.target.value)}
+                  />
+                </div>
 
-            <div className="form-group">
-              <label>Catatan Tambahan</label>
-              <textarea
-                className="form-textarea"
-                rows="2"
-                placeholder="Informasi tambahan yang relevan..."
-                value={assessmentData.additional_notes}
-                onChange={(e) => handleInputChange('additional_notes', e.target.value)}
-              />
+                <div className="form-group">
+                  <label>Catatan Tambahan</label>
+                  <textarea
+                    className="form-textarea"
+                    rows="2"
+                    placeholder="Informasi tambahan yang relevan..."
+                    value={assessmentData.additional_notes}
+                    onChange={(e) => handleInputChange('additional_notes', e.target.value)}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="form-section">
+              <p style={{color:'#556',padding:'1rem'}}>Pilih pasien terlebih dahulu untuk mengisi data subjektif dan objektif.</p>
             </div>
-          </div>
+          )}
         </div>
       )}
+      {/* Assessment modal opened from header */}
+      <Assessment
+        show={showAssessmentModal}
+        onClose={() => setShowAssessmentModal(false)}
+        onSave={(payload) => {
+          // payload: { patientId, assessment }
+          setShowAssessmentModal(false);
+          if (payload?.patientId) setSelectedPatient(payload.patientId);
+          if (payload?.assessment) setAssessmentData(payload.assessment);
+        }}
+      />
 
       {/* AI Generated Plan Tab */}
       {activeTab === 'plan' && generatedPlan && (

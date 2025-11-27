@@ -72,7 +72,9 @@ const Login = ({ onLogin }) => {
 
     } catch (err) {
       console.error('Login RTDB error:', err);
-      setError('Terjadi error saat verifikasi. Cek koneksi.');
+      // surface the real error message to help debugging (e.g. permission-denied)
+      const msg = err && err.message ? err.message : 'Terjadi error saat verifikasi. Cek koneksi.';
+      setError(`Terjadi error saat verifikasi: ${msg}`);
       setLoading(false);
     }
   };

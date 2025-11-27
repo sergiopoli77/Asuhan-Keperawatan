@@ -43,7 +43,7 @@ const AddPatients = ({ show, onClose, onSave, saving, initialData }) => {
   return (
     <div className="addpatients-overlay">
       <div className="addpatients-card">
-        <h3>Tambah Pasien Baru</h3>
+        <h3>{initialData ? 'Perbarui Data Pasien' : 'Tambah Pasien Baru'}</h3>
         <form onSubmit={handleSubmit}>
           <div className="addpatients-grid">
             <div>

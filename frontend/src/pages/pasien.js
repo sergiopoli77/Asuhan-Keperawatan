@@ -173,7 +173,7 @@ const Pasien = () => {
           handleSaveFromModal(payload);
         }
       }} saving={loadingAdd} initialData={editPatient} />
-      <ViewPatient show={!!viewPatient} onClose={() => setViewPatient(null)} data={viewPatient} />
+      <ViewPatient show={!!viewPatient} onClose={() => setViewPatient(null)} data={viewPatient} onEdit={(p) => { setEditPatient(p); setShowAddModal(true); setViewPatient(null); }} />
 
       <div className="patients-stats">
         <div className="stat-card-small">
