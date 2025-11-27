@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import '../components/assessment.css';
 import { db } from '../config/firebase';
-import { ref, get } from 'firebase/database';
+import { ref, get, push } from 'firebase/database';
 
 const Assessment = ({ show, onClose, onSave }) => {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState('');
   const [assessment, setAssessment] = useState({
     subjective: '',
-    objective: '',
     vital_signs: {
       blood_pressure: '',
       pulse: '',
@@ -16,6 +15,7 @@ const Assessment = ({ show, onClose, onSave }) => {
       respiration: '',
       oxygen_saturation: ''
     },
+    pemeriksaan_fisik: '',
     lab_results: '',
     additional_notes: ''
   });
@@ -47,7 +47,7 @@ const Assessment = ({ show, onClose, onSave }) => {
 
   useEffect(() => {
     if (!selectedPatient) {
-      setAssessment(prev => ({ ...prev, subjective: '', objective: '' }));
+      setAssessment(prev => ({ ...prev, subjective: '' }));
       return;
     }
     // try to prefill from patient record if available
@@ -55,11 +55,10 @@ const Assessment = ({ show, onClose, onSave }) => {
       try {
         const snap = await get(ref(db, `pasien/${selectedPatient}`));
         if (snap.exists()) {
-          const p = snap.val();
-          const preSubjective = p.keluhan || p.subjective || (p.diagnosis ? `Diagnosis medis: ${p.diagnosis}` : '');
-          const preObjective = p.objective || '';
-          setAssessment(prev => ({ ...prev, subjective: preSubjective, objective: preObjective }));
-        }
+              const p = snap.val();
+              const preSubjective = p.keluhan || p.subjective || (p.diagnosis ? `Diagnosis medis: ${p.diagnosis}` : '');
+              setAssessment(prev => ({ ...prev, subjective: preSubjective }));
+            }
       } catch (err) {
         console.error('Gagal memuat detail pasien', err);
       }
@@ -67,7 +66,7 @@ const Assessment = ({ show, onClose, onSave }) => {
     fillFromPatient();
   }, [selectedPatient]);
 
-  if (!show) return null;
+  
 
   const handleInputChange = (field, value) => {
     if (field.includes('.')) {
@@ -78,23 +77,48 @@ const Assessment = ({ show, onClose, onSave }) => {
     }
   };
 
-  const handleSave = () => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
     if (!selectedPatient) {
       alert('Pilih pasien terlebih dahulu');
       return;
     }
-    // basic validation: subjective/objective required
-    if (!assessment.subjective || !assessment.objective) {
-      if (!window.confirm('Beberapa field assessment kosong. Tetap simpan?')) return;
+
+    // If everything is empty, confirm before saving
+    const vit = assessment.vital_signs || {};
+    const vitEmpty = !vit.blood_pressure && !vit.pulse && !vit.temperature && !vit.respiration && !vit.oxygen_saturation;
+    const physEmpty = !assessment.pemeriksaan_fisik;
+    if (!assessment.subjective && vitEmpty && physEmpty && !assessment.lab_results && !assessment.additional_notes) {
+      const ok = window.confirm('Semua field assessment kosong. Tetap simpan?');
+      if (!ok) return;
     }
 
-    const payload = {
-      patientId: selectedPatient,
-      assessment
-    };
+    setIsSaving(true);
+    try {
+      const payload = {
+        assessment,
+        patientId: selectedPatient,
+        createdAt: new Date().toISOString(),
+        createdBy: ''
+      };
 
-    if (onSave) onSave(payload);
+      const listRef = ref(db, `assessment/${selectedPatient}`);
+      const newRef = await push(listRef, payload);
+
+      // notify parent with saved id
+      if (onSave) onSave({ id: newRef.key, ...payload });
+
+      alert('Assessment berhasil disimpan');
+    } catch (err) {
+      console.error('Gagal menyimpan assessment', err);
+      alert('Gagal menyimpan assessment. Cek konsol.');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (!show) return null;
 
   return (
     <div className="assessment-overlay">
@@ -122,48 +146,56 @@ const Assessment = ({ show, onClose, onSave }) => {
           {/* show fields only after a patient is selected */}
           {selectedPatient ? (
             <>
-              <div className="two" style={{marginTop:10}}>
+              <div style={{marginTop:10}}>
                 <div>
                   <label>Data Subjektif</label>
                   <textarea rows={4} value={assessment.subjective} onChange={(e)=>handleInputChange('subjective', e.target.value)} />
                 </div>
-                <div>
-                  <label>Data Objektif</label>
-                  <textarea rows={4} value={assessment.objective} onChange={(e)=>handleInputChange('objective', e.target.value)} />
-                </div>
-              </div>
 
-              <div style={{marginTop:8}}>
-                <div className="two">
-                  <div>
-                    <label>Tekanan Darah</label>
-                    <input value={assessment.vital_signs.blood_pressure} onChange={(e)=>handleInputChange('vital_signs.blood_pressure', e.target.value)} />
-                  </div>
-                  <div>
-                    <label>Nadi</label>
-                    <input value={assessment.vital_signs.pulse} onChange={(e)=>handleInputChange('vital_signs.pulse', e.target.value)} />
-                  </div>
-                </div>
-
-                <div className="two" style={{marginTop:8}}>
-                  <div>
-                    <label>Suhu</label>
-                    <input value={assessment.vital_signs.temperature} onChange={(e)=>handleInputChange('vital_signs.temperature', e.target.value)} />
-                  </div>
-                  <div>
-                    <label>Pernapasan</label>
-                    <input value={assessment.vital_signs.respiration} onChange={(e)=>handleInputChange('vital_signs.respiration', e.target.value)} />
-                  </div>
-                </div>
-
+                <h4 style={{marginTop:12}}>Data Objektif</h4>
                 <div style={{marginTop:8}}>
-                  <label>Hasil Laboratorium</label>
-                  <textarea rows={3} value={assessment.lab_results} onChange={(e)=>handleInputChange('lab_results', e.target.value)} />
-                </div>
+                  <div className="two">
+                    <div>
+                      <label>Tekanan Darah</label>
+                      <input value={assessment.vital_signs.blood_pressure} onChange={(e)=>handleInputChange('vital_signs.blood_pressure', e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Nadi</label>
+                      <input value={assessment.vital_signs.pulse} onChange={(e)=>handleInputChange('vital_signs.pulse', e.target.value)} />
+                    </div>
+                  </div>
 
-                <div style={{marginTop:8}}>
-                  <label>Catatan Tambahan</label>
-                  <textarea rows={2} value={assessment.additional_notes} onChange={(e)=>handleInputChange('additional_notes', e.target.value)} />
+                  <div className="two" style={{marginTop:8}}>
+                    <div>
+                      <label>Suhu</label>
+                      <input value={assessment.vital_signs.temperature} onChange={(e)=>handleInputChange('vital_signs.temperature', e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Pernapasan</label>
+                      <input value={assessment.vital_signs.respiration} onChange={(e)=>handleInputChange('vital_signs.respiration', e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div className="two" style={{marginTop:8}}>
+                    <div>
+                      <label>Saturasi O2</label>
+                      <input value={assessment.vital_signs.oxygen_saturation} onChange={(e)=>handleInputChange('vital_signs.oxygen_saturation', e.target.value)} placeholder="98%" />
+                    </div>
+                    <div>
+                      <label>Pemeriksaan Fisik</label>
+                      <textarea rows={3} value={assessment.pemeriksaan_fisik} onChange={(e)=>handleInputChange('pemeriksaan_fisik', e.target.value)} placeholder="Hasil pemeriksaan fisik, inspeksi, palpasi, perkusi, auskultasi..." />
+                    </div>
+                  </div>
+
+                  <div style={{marginTop:8}}>
+                    <label>Hasil Laboratorium</label>
+                    <textarea rows={3} value={assessment.lab_results} onChange={(e)=>handleInputChange('lab_results', e.target.value)} />
+                  </div>
+
+                  <div style={{marginTop:8}}>
+                    <label>Catatan Tambahan</label>
+                    <textarea rows={2} value={assessment.additional_notes} onChange={(e)=>handleInputChange('additional_notes', e.target.value)} />
+                  </div>
                 </div>
               </div>
             </>
@@ -172,8 +204,8 @@ const Assessment = ({ show, onClose, onSave }) => {
           )}
 
           <div className="assessment-actions">
-            <button className="assessment-button cancel" onClick={onClose}>Batal</button>
-            <button className="assessment-button save" onClick={handleSave}>Simpan Assessment</button>
+            <button className="assessment-button cancel" onClick={onClose} disabled={isSaving}>Batal</button>
+            <button className="assessment-button save" onClick={handleSave} disabled={isSaving}>{isSaving ? 'Menyimpan...' : 'Simpan Assessment'}</button>
           </div>
         </div>
       </div>
